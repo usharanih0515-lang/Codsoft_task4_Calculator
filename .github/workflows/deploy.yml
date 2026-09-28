@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+# Trigger: run this workflow whenever code is pushed to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Grant the workflow permission to write to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one deployment at a time
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Configure GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Step 3: Upload the entire repo root as the Pages artifact
+      #         (index.html, style.css, script.js are all in the root)
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'   # Upload from root — where index.html lives
+
+      # Step 4: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
